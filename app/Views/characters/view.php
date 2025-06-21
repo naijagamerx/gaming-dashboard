@@ -151,6 +151,147 @@ function printJson красиво($jsonString) {
                 </a>
             </div>
 
+            <hr>
+            <!-- Crafting & Production Data -->
+            <div id="characterCraftingSection" class="mt-4">
+                <div class="row">
+                    <div class="col-md-6">
+                        <h5>Recent Crafting Logs (Last 5)</h5>
+                        <?php if (!empty($recentCraftingLogs)): ?>
+                            <div class="table-responsive" style="max-height: 300px; overflow-y: auto;">
+                                <table class="table table-sm table-striped table-hover">
+                                    <thead class="table-light sticky-top">
+                                        <tr>
+                                            <th>Timestamp</th>
+                                            <th>Item Name</th>
+                                            <th>Amount</th>
+                                            <th>Status</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        <?php foreach ($recentCraftingLogs as $log): ?>
+                                            <tr>
+                                                <td><?= htmlspecialchars(date('Y-m-d H:i:s', $log['timestamp'])) ?></td>
+                                                <td><?= htmlspecialchars($log['itemLabel'] ?: $log['itemName']) ?></td>
+                                                <td><?= htmlspecialchars($log['itemAmount']) ?></td>
+                                                <td><span class="badge bg-<?= $log['status'] == 'completed' ? 'success' : ($log['status'] == 'failed' ? 'danger' : 'secondary') ?>"><?= htmlspecialchars($log['status']) ?></span></td>
+                                            </tr>
+                                        <?php endforeach; ?>
+                                    </tbody>
+                                </table>
+                            </div>
+                        <?php else: ?>
+                            <p class="text-muted">No recent crafting logs found.</p>
+                        <?php endif; ?>
+                    </div>
+                    <div class="col-md-6">
+                        <h5>Crafting Progress</h5>
+                        <?php if (!empty($craftingProgress)): ?>
+                            <table class="table table-sm table-borderless">
+                                <!-- Example fields, adjust based on actual bcc_craft_progress schema -->
+                                <?php if (isset($craftingProgress['general_xp'])): ?>
+                                <tr><th style="width: 30%;">General XP:</th><td><?= htmlspecialchars($craftingProgress['general_xp']) ?></td></tr>
+                                <?php endif; ?>
+                                <?php if (isset($craftingProgress['general_level'])): ?>
+                                <tr><th>General Level:</th><td><?= htmlspecialchars($craftingProgress['general_level']) ?></td></tr>
+                                <?php endif; ?>
+
+                                <!-- If skills are in a JSON field -->
+                                <?php
+                                $skillsData = null;
+                                if (isset($craftingProgress['skills_json'])) {
+                                    $skillsData = json_decode($craftingProgress['skills_json'], true);
+                                } elseif (isset($craftingProgress['specific_skills'])) { // Alternative column name
+                                    $skillsData = json_decode($craftingProgress['specific_skills'], true);
+                                }
+                                ?>
+                                <?php if (is_array($skillsData) && !empty($skillsData)): ?>
+                                    <tr><td colspan="2"><strong>Specific Skills:</strong></td></tr>
+                                    <?php foreach ($skillsData as $skillName => $skillDetails): ?>
+                                        <tr>
+                                            <td class="ps-3">- <?= htmlspecialchars(ucfirst(str_replace('_', ' ', $skillName))) ?>:</td>
+                                            <td>
+                                                <?php if (is_array($skillDetails)): ?>
+                                                    XP: <?= htmlspecialchars($skillDetails['xp'] ?? 'N/A') ?>,
+                                                    Level: <?= htmlspecialchars($skillDetails['level'] ?? 'N/A') ?>
+                                                <?php else: ?>
+                                                    <?= htmlspecialchars($skillDetails) ?>
+                                                <?php endif; ?>
+                                            </td>
+                                        </tr>
+                                    <?php endforeach; ?>
+                                <?php elseif (!empty($craftingProgress) && !isset($craftingProgress['id']) && !isset($craftingProgress['charidentifier'])): ?>
+                                     <tr><td colspan="2"><strong>Raw Progress Data:</strong></td></tr>
+                                     <?php foreach($craftingProgress as $key => $value):
+                                        if ($key == 'id' || $key == 'charidentifier') continue; ?>
+                                        <tr>
+                                            <td class="ps-3">- <?= htmlspecialchars(ucfirst(str_replace('_', ' ', $key))) ?>:</td>
+                                            <td><?= htmlspecialchars($value) ?></td>
+                                        </tr>
+                                     <?php endforeach; ?>
+                                <?php endif; ?>
+                            </table>
+                        <?php else: ?>
+                            <p class="text-muted">No crafting progress data found.</p>
+                        <?php endif; ?>
+                    </div>
+                </div>
+            </div>
+            <hr>
+            <!-- Social Features Data -->
+            <div id="characterSocialSection" class="mt-4">
+                <div class="row">
+                    <div class="col-md-6">
+                        <h5>Posse Information</h5>
+                        <?php if (!empty($posseInfo)): ?>
+                            <p>
+                                <strong>Posse Name:</strong> <?= htmlspecialchars($posseInfo['possename']) ?> (ID: <?= htmlspecialchars($posseInfo['id']) ?>)<br>
+                                <strong>Leader CharID:</strong> <?= htmlspecialchars($posseInfo['characterid']) ?><br>
+                                <strong>Leader SteamID:</strong> <?= htmlspecialchars($posseInfo['identifier']) ?>
+                            </p>
+                            <h6>Members (<?= count($posseMembers) ?>):</h6>
+                            <?php if (!empty($posseMembers)): ?>
+                                <ul class="list-group list-group-sm" style="max-height: 150px; overflow-y: auto;">
+                                    <?php foreach ($posseMembers as $member): ?>
+                                        <li class="list-group-item d-flex justify-content-between align-items-center">
+                                            <?= htmlspecialchars($member['firstname'] . ' ' . $member['lastname']) ?>
+                                            <small class="text-muted">(CharID: <?= htmlspecialchars($member['charidentifier']) ?>)</small>
+                                        </li>
+                                    <?php endforeach; ?>
+                                </ul>
+                            <?php else: ?>
+                                <p class="text-muted">No members listed for this posse (or character is the only member and not listed here).</p>
+                            <?php endif; ?>
+                        <?php elseif (isset($character['posseid']) && !empty($character['posseid'])): ?>
+                             <p class="text-muted">Belongs to Posse ID: <?= htmlspecialchars($character['posseid']) ?> (Details not found or error loading).</p>
+                        <?php else: ?>
+                            <p class="text-muted">Not currently a member of a posse.</p>
+                        <?php endif; ?>
+                    </div>
+                    <div class="col-md-6">
+                        <h5>Recent Mail (Received - Last 3)</h5>
+                        <?php if (!empty($recentMail)): ?>
+                             <div class="list-group list-group-sm" style="max-height: 200px; overflow-y: auto;">
+                                <?php foreach ($recentMail as $mail): ?>
+                                    <a href="#" class="list-group-item list-group-item-action flex-column align-items-start disabled" title="Mail viewing not fully implemented yet. Subject: <?= htmlspecialchars($mail['subject']) ?>"> <!-- Link to full mail view later -->
+                                        <div class="d-flex w-100 justify-content-between">
+                                            <h6 class="mb-1"><?= htmlspecialchars($mail['subject']) ?></h6>
+                                            <small class="text-muted"><?= htmlspecialchars(date('Y-m-d H:i', strtotime($mail['sent_at']))) ?></small>
+                                        </div>
+                                        <p class="mb-1 small">From: <?= htmlspecialchars($mail['sender_firstname'] . ' ' . $mail['sender_lastname'] ?: 'Unknown Sender') ?></p>
+                                        <small class="text-muted fst-italic">Status: <?= ($mail['is_read'] ?? 0) ? 'Read' : 'Unread' ?></small>
+                                    </a>
+                                <?php endforeach; ?>
+                            </div>
+                        <?php else: ?>
+                            <p class="text-muted">No recent mail found.</p>
+                        <?php endif; ?>
+                        <!-- Link to full mailbox view if implemented later -->
+                        <!-- <a href="index.php?action=mailboxView&charidentifier=<?= urlencode($character['charidentifier']) ?>" class="btn btn-sm btn-outline-secondary mt-2">View Full Mailbox (TODO)</a> -->
+                    </div>
+                </div>
+            </div>
+
         </div>
     </div>
 </div>

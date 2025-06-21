@@ -91,11 +91,38 @@ class CharacterController {
         $bankUserModel = new BankUser(); // Or use $this->bankUserModel if initialized in constructor
         $bankAccounts = $bankUserModel->getBankAccountsByCharIdentifier($charIdentifier);
 
+        // Fetch Crafting Data
+        $craftingLogModel = new CraftingLog();
+        $recentCraftingLogs = $craftingLogModel->getLogsByCharacterId($charIdentifier, 5); // Get last 5 logs
+
+        $craftingProgressModel = new CraftingProgress();
+        $characterCraftingProgress = $craftingProgressModel->getProgressByCharacterId($charIdentifier);
+
+        // Fetch Social Data
+        $posseModel = new Posse();
+        $characterPosseInfo = null;
+        $posseMembers = [];
+        if (!empty($character['posseid'])) {
+            $characterPosseInfo = $posseModel->getCharacterPosseInfo($character['posseid']);
+            if ($characterPosseInfo) {
+                $posseMembers = $posseModel->getPosseMembers($character['posseid']);
+            }
+        }
+
+        $mailboxModel = new Mailbox();
+        // Fetch a few recent received mails for summary display
+        $recentReceivedMail = $mailboxModel->getReceivedMailsByCharacterId($charIdentifier, 3);
+
 
         $viewData = [
             'character' => $character,
             'inventory' => $inventory,
             'bankAccounts' => $bankAccounts,
+            'recentCraftingLogs' => $recentCraftingLogs,
+            'craftingProgress' => $characterCraftingProgress,
+            'posseInfo' => $characterPosseInfo,
+            'posseMembers' => $posseMembers,
+            'recentMail' => $recentReceivedMail,
             'csrfToken' => $this->authService->getCsrfToken()
         ];
         $GLOBALS['pageTitle'] = 'View Character: ' . htmlspecialchars($character['firstname'] . ' ' . $character['lastname']);

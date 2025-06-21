@@ -26,7 +26,12 @@ require_once __DIR__ . '/../app/Controllers/AuthController.php';
 require_once __DIR__ . '/../app/Controllers/UserController.php';
 require_once __DIR__ . '/../app/Controllers/CharacterController.php';
 require_once __DIR__ . '/../app/Controllers/EconomyController.php';
-require_once __DIR__ . '/../app/Controllers/ItemController.php'; // Added ItemController
+require_once __DIR__ . '/../app/Controllers/ItemController.php';
+require_once __DIR__ . '/../app/Controllers/HousingController.php'; // Added
+require_once __DIR__ . '/../app/Controllers/AnimalController.php'; // Added
+require_once __DIR__ . '/../app/Controllers/CraftingController.php'; // Added
+require_once __DIR__ . '/../app/Controllers/PosseController.php'; // Added
+
 
 // Basic Routing
 $action = $_GET['action'] ?? 'showLogin'; // Default action if none is specified
@@ -240,7 +245,96 @@ switch ($action) {
         $controller = new ItemController();
         $controller->index();
         break;
-    // Add itemCreate, itemStore, itemEdit, itemUpdate, itemDelete later if full item CRUD is needed
+    // Item CRUD routes (itemCreate, itemStore, etc.) can be added when functionality is built.
+
+    // Housing Routes (Admin)
+    case 'housingList':
+        $controller = new HousingController();
+        $controller->index();
+        break;
+    case 'housingCreate':
+        $controller = new HousingController();
+        $controller->create();
+        break;
+    case 'housingStore':
+        $controller = new HousingController();
+        $controller->store(); // Handles redirect
+        exit;
+    case 'housingView':
+        if (!$idParam) { $_SESSION['error_message'] = 'House ID missing.'; header('Location: index.php?action=housingList'); exit;}
+        $controller = new HousingController();
+        $controller->view($idParam);
+        break;
+    case 'housingEdit':
+        if (!$idParam) { $_SESSION['error_message'] = 'House ID missing.'; header('Location: index.php?action=housingList'); exit;}
+        $controller = new HousingController();
+        $controller->edit($idParam);
+        break;
+    case 'housingUpdate':
+        if (!$idParam) { $_SESSION['error_message'] = 'House ID missing.'; header('Location: index.php?action=housingList'); exit;}
+        $controller = new HousingController();
+        $controller->update($idParam); // Handles redirect
+        exit;
+    case 'housingDelete':
+        if (!$idParam) { $_SESSION['error_message'] = 'House ID missing.'; header('Location: index.php?action=housingList'); exit;}
+        $controller = new HousingController();
+        $controller->delete($idParam); // Handles redirect
+        exit;
+
+    // Animal (Player Horses) Routes (Admin for CRUD, Owner/Admin for View)
+    case 'horseList':
+        $controller = new AnimalController();
+        $controller->listHorses();
+        break;
+    case 'horseCreate':
+        $controller = new AnimalController();
+        $controller->createHorse();
+        break;
+    case 'horseStore':
+        $controller = new AnimalController();
+        $controller->storeHorse(); // Handles redirect
+        exit;
+    case 'horseView':
+        if (!$idParam) { $_SESSION['error_message'] = 'Horse ID missing.'; header('Location: index.php?action=horseList'); exit;}
+        $controller = new AnimalController();
+        $controller->viewHorse($idParam);
+        break;
+    case 'horseEdit':
+        if (!$idParam) { $_SESSION['error_message'] = 'Horse ID missing.'; header('Location: index.php?action=horseList'); exit;}
+        $controller = new AnimalController();
+        $controller->editHorse($idParam);
+        break;
+    case 'horseUpdate':
+        if (!$idParam) { $_SESSION['error_message'] = 'Horse ID missing.'; header('Location: index.php?action=horseList'); exit;}
+        $controller = new AnimalController();
+        $controller->updateHorse($idParam); // Handles redirect
+        exit;
+    case 'horseDelete':
+        if (!$idParam) { $_SESSION['error_message'] = 'Horse ID missing.'; header('Location: index.php?action=horseList'); exit;}
+        $controller = new AnimalController();
+        $controller->deleteHorse($idParam); // Handles redirect
+        exit;
+
+    // Crafting Admin Routes
+    case 'craftingLogList':
+        $controller = new CraftingController();
+        $controller->listCraftingLogs();
+        break;
+    case 'craftingProgressList':
+        $controller = new CraftingController();
+        $controller->listCraftingProgress();
+        break;
+
+    // Posse Admin Routes
+    case 'posseList':
+        $controller = new PosseController();
+        $controller->listPosses();
+        break;
+    case 'posseView':
+        if (!$idParam) { $_SESSION['error_message'] = 'Posse ID missing.'; header('Location: index.php?action=posseList'); exit;}
+        $controller = new PosseController();
+        $controller->viewPosse($idParam);
+        break;
 
     // AJAX route example for theme toggle (optional)
     case 'toggleTheme':

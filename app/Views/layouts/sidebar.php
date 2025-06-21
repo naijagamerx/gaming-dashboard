@@ -31,34 +31,67 @@ $isLoggedIn = $authService->isLoggedIn();
             </a>
             <?php endif; ?>
 
+            <?php if ($authService->hasPermission('admin') || $authService->hasPermission('super_admin')): ?>
+            <a class="list-group-item list-group-item-action list-group-item-dark p-3 <?= (strpos($currentAction, 'housingList') === 0 || strpos($currentAction, 'housingCreate') === 0 || strpos($currentAction, 'housingEdit') === 0 || strpos($currentAction, 'housingView') === 0) ? 'active' : '' ?>" href="index.php?action=housingList">
+                <i class="bi bi-house-door-fill me-2"></i>Housing Management
+            </a>
+            <?php endif; ?>
+
+            <?php if ($authService->hasPermission('admin') || $authService->hasPermission('super_admin')): ?>
+            <a class="list-group-item list-group-item-action list-group-item-dark p-3 <?= (strpos($currentAction, 'horseList') === 0 || strpos($currentAction, 'horseCreate') === 0 || strpos($currentAction, 'horseEdit') === 0 || strpos($currentAction, 'horseView') === 0) ? 'active' : '' ?>" href="index.php?action=horseList">
+                <i class="bi bi-hearts me-2"></i>Animal Management
+            </a>
+            <?php endif; ?>
+
             <?php
-            // Economy link could point to a general economy dashboard or be a dropdown
-            // For now, a direct link or placeholder. If linking to a specific character's economy, it's usually from character list/view.
-            // This sidebar link is more for general economy features if any, or an admin overview.
-            // Let's make it less prominent for now or a placeholder as global economy view is not built.
-            // A character's economy is viewed via characterView -> economyView action.
+            // Economy link: A character's economy is viewed via characterView -> economyView action.
+            // Sidebar link could be for a general Economy Overview (admin) or admin tools.
             ?>
             <?php if ($authService->hasPermission('admin') || $authService->hasPermission('super_admin')): ?>
-                <!-- Placeholder for a general economy dashboard if one were to be built -->
-                <!-- <a class="list-group-item list-group-item-action list-group-item-dark p-3 <?= (strpos($currentAction, 'economyDashboard') === 0) ? 'active' : '' ?>" href="#!economyDashboard">
-                    <i class="bi bi-currency-dollar me-2"></i>Economy Overview (TODO)
-                </a> -->
+                 <a class="list-group-item list-group-item-action list-group-item-dark p-3 <?= (strpos($currentAction, 'economyAdjustBalanceForm') === 0) ? 'active' : '' ?>" href="index.php?action=characterList&info=economyTools"> <!-- Link to char list, then pick char for tools -->
+                    <i class="bi bi-currency-dollar me-2"></i>Economy Tools (Admin)
+                </a>
             <?php endif; ?>
 
             <!-- Item/Inventory Management -->
             <?php if ($authService->hasPermission('admin') || $authService->hasPermission('super_admin')): ?>
             <div class="list-group-item list-group-item-dark p-0">
-                <a href="#inventoryManagementSubmenu" data-bs-toggle="collapse" aria-expanded="<?= (strpos($currentAction, 'itemList') === 0) ? 'true' : 'false' ?>" class="list-group-item list-group-item-action list-group-item-dark p-3 dropdown-toggle <?= (strpos($currentAction, 'itemList') === 0) ? 'active' : '' ?>">
+                <a href="#itemManagementSubmenu" data-bs-toggle="collapse" aria-expanded="<?= (strpos($currentAction, 'itemList') === 0) ? 'true' : 'false' ?>" class="list-group-item list-group-item-action list-group-item-dark p-3 dropdown-toggle <?= (strpos($currentAction, 'itemList') === 0) ? 'active' : '' ?>">
                     <i class="bi bi-box-seam me-2"></i>Item Management
                 </a>
-                <ul class="collapse list-unstyled <?= (strpos($currentAction, 'itemList') === 0) ? 'show' : '' ?>" id="inventoryManagementSubmenu">
+                <ul class="collapse list-unstyled <?= (strpos($currentAction, 'itemList') === 0) ? 'show' : '' ?>" id="itemManagementSubmenu">
                     <li>
-                        <a href="index.php?action=itemList" class="list-group-item list-group-item-action list-group-item-dark p-3 ps-5 <?= ($currentAction == 'itemList') ? 'active' : '' ?>">Items Database (View)</a>
+                        <a href="index.php?action=itemList" class="list-group-item list-group-item-action list-group-item-dark p-3 ps-5 <?= ($currentAction == 'itemList') ? 'active' : '' ?>">Items Database</a>
                     </li>
                     <!-- Future links: Create Item, Crafted Items, etc. -->
                 </ul>
             </div>
             <?php endif; ?>
+
+            <!-- Crafting Logs & Progress (Admin View) -->
+            <?php if ($authService->hasPermission('admin') || $authService->hasPermission('super_admin')): ?>
+            <div class="list-group-item list-group-item-dark p-0">
+                <a href="#craftingManagementSubmenu" data-bs-toggle="collapse" aria-expanded="<?= (strpos($currentAction, 'craftingLogList') === 0 || strpos($currentAction, 'craftingProgressList') === 0) ? 'true' : 'false' ?>" class="list-group-item list-group-item-action list-group-item-dark p-3 dropdown-toggle <?= (strpos($currentAction, 'craftingLogList') === 0 || strpos($currentAction, 'craftingProgressList') === 0) ? 'active' : '' ?>">
+                    <i class="bi bi-tools me-2"></i>Crafting Admin
+                </a>
+                <ul class="collapse list-unstyled <?= (strpos($currentAction, 'craftingLogList') === 0 || strpos($currentAction, 'craftingProgressList') === 0) ? 'show' : '' ?>" id="craftingManagementSubmenu">
+                    <li>
+                        <a href="index.php?action=craftingLogList" class="list-group-item list-group-item-action list-group-item-dark p-3 ps-5 <?= ($currentAction == 'craftingLogList') ? 'active' : '' ?>">Crafting Logs</a>
+                    </li>
+                     <li>
+                        <a href="index.php?action=craftingProgressList" class="list-group-item list-group-item-action list-group-item-dark p-3 ps-5 <?= ($currentAction == 'craftingProgressList') ? 'active' : '' ?>">Crafting Progress</a>
+                    </li>
+                </ul>
+            </div>
+            <?php endif; ?>
+
+            <!-- Posses (Admin View) -->
+             <?php if ($authService->hasPermission('admin') || $authService->hasPermission('super_admin')): ?>
+            <a class="list-group-item list-group-item-action list-group-item-dark p-3 <?= (strpos($currentAction, 'posseList') === 0) ? 'active' : '' ?>" href="index.php?action=posseList">
+                <i class="bi bi-people-fill me-2"></i>Posse Management
+            </a>
+            <?php endif; ?>
+
 
             <a class="list-group-item list-group-item-action list-group-item-dark p-3 <?= ($currentAction == 'settings') ? 'active' : '' ?>" href="#!settings"> <!-- Placeholder Link -->
                 <i class="bi bi-gear me-2"></i>Settings (TODO)
