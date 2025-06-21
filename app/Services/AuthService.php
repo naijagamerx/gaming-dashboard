@@ -196,6 +196,12 @@ session_set_cookie_params([
 // It's good practice to start the session here if it's always needed when AuthService is included,
 // or ensure it's started before any session operations are called.
 // However, individual methods also check and start session if needed to be safe.
+// Session configuration settings have been moved to public/index.php to be set before session_start().
+
 if (session_status() == PHP_SESSION_NONE) {
-    session_start();
+    // It's generally better to let index.php handle the initial session_start()
+    // after configurations are set. If AuthService is instantiated after session_start()
+    // in index.php, this is fine.
+    // For safety, methods in this class will still check session_status() if they directly use $_SESSION.
+    // session_start(); // Consider if this is still needed here or if index.php guarantees it.
 }

@@ -1,7 +1,27 @@
 <?php
 // public/index.php - Main Entry Point / Front Controller
 
-// Start session management
+// Session Configuration (MUST be before session_start())
+ini_set('session.use_only_cookies', 1);
+ini_set('session.cookie_httponly', 1); // Prevent JavaScript access to session cookie
+if (isset($_SERVER['HTTPS']) && $_SERVER['HTTPS'] === 'on') {
+    ini_set('session.cookie_secure', 1); // Send cookie only over HTTPS
+} else {
+    // For local development without HTTPS, you might need to comment out or ensure cookie_secure is 0
+    // ini_set('session.cookie_secure', 0); // Or handle based on environment
+}
+ini_set('session.gc_maxlifetime', 7200); // Session timeout: 2 hours (2 * 60 * 60)
+
+session_set_cookie_params([
+    'lifetime' => 7200, // Should match gc_maxlifetime
+    'path' => '/',      // Available to entire domain
+    'domain' => $_SERVER['HTTP_HOST'] ?? 'localhost', // Current domain, or specific if needed
+    'secure' => isset($_SERVER['HTTPS']), // True if HTTPS, false otherwise
+    'httponly' => true,  // No JavaScript access
+    'samesite' => 'Lax'  // Or 'Strict' for better CSRF protection but can affect cross-site links
+]);
+
+// Start session management AFTER configurations
 if (session_status() == PHP_SESSION_NONE) {
     session_start();
 }

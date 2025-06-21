@@ -33,7 +33,7 @@ class Item extends BaseModel {
      * @param string $itemCode
      * @return array|false
      */
-    public functionfindByItemCode($itemCode) {
+    public function findByItemCode($itemCode) { // Corrected: Added space
         $result = $this->findAll(['item' => $itemCode], '', 1);
         return $result ? $result[0] : false;
     }
