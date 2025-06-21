@@ -24,11 +24,14 @@ require_once __DIR__ . '/../app/Config/database.php';
 require_once __DIR__ . '/../app/Services/AuthService.php';
 require_once __DIR__ . '/../app/Controllers/AuthController.php';
 require_once __DIR__ . '/../app/Controllers/UserController.php';
-// Add other controllers as they are created, e.g.:
-// require_once __DIR__ . '/../app/Controllers/DashboardController.php';
+require_once __DIR__ . '/../app/Controllers/CharacterController.php';
+require_once __DIR__ . '/../app/Controllers/EconomyController.php';
+require_once __DIR__ . '/../app/Controllers/ItemController.php'; // Added ItemController
 
 // Basic Routing
 $action = $_GET['action'] ?? 'showLogin'; // Default action if none is specified
+$charIdentifierParam = $_GET['charidentifier'] ?? null; // Common parameter for character related actions
+$idParam = $_GET['id'] ?? null; // Common parameter for item/other ID related actions
 
 // Instantiate AuthService here to be available for layout and controllers if needed
 $authService = new AuthService();
@@ -181,6 +184,63 @@ switch ($action) {
         if (!$identifier) { /* error */ header('Location: index.php?action=userList'); exit; }
         $controller->delete($identifier); // Handles logic and redirects
         exit;
+
+    // Character Management Routes
+    case 'characterList':
+        $controller = new CharacterController();
+        $controller->index(); // This method now sets $GLOBALS for viewFile and viewData
+        break;
+    case 'characterCreate':
+        $controller = new CharacterController();
+        $controller->create();
+        break;
+    case 'characterStore':
+        $controller = new CharacterController();
+        $controller->store(); // Handles redirect
+        exit;
+    case 'characterView':
+        if (!$charIdentifierParam) { $_SESSION['error_message'] = 'Character ID missing.'; header('Location: index.php?action=characterList'); exit;}
+        $controller = new CharacterController();
+        $controller->view($charIdentifierParam);
+        break;
+    case 'characterEdit':
+        if (!$charIdentifierParam) { $_SESSION['error_message'] = 'Character ID missing.'; header('Location: index.php?action=characterList'); exit;}
+        $controller = new CharacterController();
+        $controller->edit($charIdentifierParam);
+        break;
+    case 'characterUpdate':
+        if (!$charIdentifierParam) { $_SESSION['error_message'] = 'Character ID missing.'; header('Location: index.php?action=characterList'); exit;}
+        $controller = new CharacterController();
+        $controller->update($charIdentifierParam); // Handles redirect
+        exit;
+    case 'characterDelete':
+        if (!$charIdentifierParam) { $_SESSION['error_message'] = 'Character ID missing.'; header('Location: index.php?action=characterList'); exit;}
+        $controller = new CharacterController();
+        $controller->delete($charIdentifierParam); // Handles redirect
+        exit;
+
+    // Economy Routes
+    case 'economyView': // View economy for a specific character
+        if (!$charIdentifierParam) { $_SESSION['error_message'] = 'Character ID missing for economy view.'; header('Location: index.php?action=characterList'); exit;}
+        $controller = new EconomyController();
+        $controller->viewCharacterEconomy($charIdentifierParam);
+        break;
+    case 'economyAdjustBalanceForm': // Show form to adjust balance (admin)
+        if (!$charIdentifierParam) { $_SESSION['error_message'] = 'Character ID missing for balance adjustment form.'; header('Location: index.php?action=characterList'); exit;}
+        $controller = new EconomyController();
+        $controller->adjustBalanceForm($charIdentifierParam);
+        break;
+    case 'economyProcessAdjustBalance': // Process balance adjustment (admin)
+        $controller = new EconomyController();
+        $controller->processAdjustBalance(); // Handles redirect
+        exit;
+
+    // Item Routes
+    case 'itemList': // View list of all items in database
+        $controller = new ItemController();
+        $controller->index();
+        break;
+    // Add itemCreate, itemStore, itemEdit, itemUpdate, itemDelete later if full item CRUD is needed
 
     // AJAX route example for theme toggle (optional)
     case 'toggleTheme':
