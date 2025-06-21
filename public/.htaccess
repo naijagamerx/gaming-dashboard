@@ -1,0 +1,44 @@
+# public/.htaccess
+
+<IfModule mod_rewrite.c>
+    RewriteEngine On
+
+    # Redirect Trailing Slashes If Not A Folder...
+    RewriteCond %{REQUEST_FILENAME} !-d
+    RewriteCond %{REQUEST_URI} (.+)/$
+    RewriteRule ^ %1 [L,R=301]
+
+    # Send Requests To Front Controller (index.php)
+    # if the requested file/directory doesn't exist directly
+    RewriteCond %{REQUEST_FILENAME} !-d
+    RewriteCond %{REQUEST_FILENAME} !-f
+    RewriteRule ^ index.php [L]
+</IfModule>
+
+# Disable directory browsing
+Options -Indexes
+
+# Deny access to sensitive files in the public directory if any were to be placed here by mistake
+# (e.g., .env files, though they should be outside public_html)
+<Files ".env">
+    Order allow,deny
+    Deny from all
+</Files>
+<Files "composer.json">
+    Order allow,deny
+    Deny from all
+</Files>
+<Files "composer.lock">
+    Order allow,deny
+    Deny from all
+</Files>
+
+# Optional: Add default character set
+AddDefaultCharset UTF-8
+
+# Optional: Security headers (can also be set in PHP)
+# Header set X-Content-Type-Options "nosniff"
+# Header set X-Frame-Options "SAMEORIGIN"
+# Header set X-XSS-Protection "1; mode=block"
+# Header set Content-Security-Policy "default-src 'self';" (This is very restrictive, configure carefully)
+# Header set Strict-Transport-Security "max-age=31536000; includeSubDomains" env=HTTPS (Only if HTTPS is enforced)

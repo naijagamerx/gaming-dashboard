@@ -1,0 +1,183 @@
+/* public/assets/css/custom.css */
+
+body {
+    overflow-x: hidden; /* Prevent horizontal scroll */
+}
+
+#wrapper {
+    display: flex;
+    min-height: 100vh; /* Ensure footer is at bottom if content is short */
+    flex-direction: column; /* Default for smaller screens */
+}
+
+#sidebar-wrapper {
+    min-height: 100vh; /* Full height sidebar */
+    width: 250px; /* Default sidebar width */
+    transition: margin-left 0.25s ease-out;
+    margin-left: -250px; /* Hidden by default on small screens */
+    flex-shrink: 0;
+}
+
+#page-content-wrapper {
+    flex-grow: 1; /* Takes remaining space */
+    width: 100%; /* Full width initially */
+    overflow-y: auto; /* Allow vertical scroll within content area */
+    display: flex;
+    flex-direction: column; /* To make footer stick to bottom */
+}
+
+#wrapper.toggled #sidebar-wrapper {
+    margin-left: 0;
+}
+
+.sidebar-heading {
+    padding: 0.875rem 1.25rem;
+    font-size: 1.2rem;
+}
+
+.list-group-item {
+    border: none;
+}
+.list-group-item.active {
+    background-color: #495057 !important; /* Darker active state for dark sidebar */
+    border-color: #495057 !important;
+    color: #fff !important;
+}
+.list-group-item-dark.list-group-item-action:hover,
+.list-group-item-dark.list-group-item-action:focus {
+    background-color: #3c4146; /* Slightly lighter hover for dark sidebar items */
+    color: #f8f9fa;
+}
+
+/* Ensure page content takes up available space so footer is at bottom */
+#page-content-wrapper .container-fluid {
+    flex-grow: 1;
+}
+
+/* Light theme specific */
+[data-bs-theme="light"] #sidebar-wrapper {
+    background-color: #f8f9fa; /* Light background for sidebar */
+    border-right: 1px solid #dee2e6;
+}
+[data-bs-theme="light"] .sidebar-heading {
+    background-color: #e9ecef;
+    color: #212529;
+    border-bottom: 1px solid #dee2e6;
+}
+[data-bs-theme="light"] .list-group-item-dark { /* In light theme, make these appropriate for light bg */
+    background-color: #f8f9fa;
+    color: #212529;
+    border-color: rgba(0,0,0,.125);
+}
+[data-bs-theme="light"] .list-group-item-dark.list-group-item-action:hover,
+[data-bs-theme="light"] .list-group-item-dark.list-group-item-action:focus {
+    background-color: #e9ecef;
+    color: #000;
+}
+[data-bs-theme="light"] .list-group-item.active {
+    background-color: #0d6efd !important; /* Bootstrap primary for active links in light mode */
+    border-color: #0d6efd !important;
+    color: #fff !important;
+}
+
+
+/* Dark theme specific (sidebar is already dark by default in the HTML) */
+[data-bs-theme="dark"] body {
+    background-color: #212529;
+    color: #f8f9fa;
+}
+[data-bs-theme="dark"] .navbar { /* Example: Making navbar dark in dark theme */
+    background-color: #343a40 !important;
+    border-bottom: 1px solid #495057 !important;
+}
+[data-bs-theme="dark"] .navbar .nav-link,
+[data-bs-theme="dark"] .navbar .navbar-brand,
+[data-bs-theme="dark"] .navbar .navbar-toggler-icon {
+    color: #f8f9fa !important;
+}
+[data-bs-theme="dark"] .dropdown-menu {
+    background-color: #343a40;
+    border: 1px solid #495057;
+}
+[data-bs-theme="dark"] .dropdown-item {
+    color: #f8f9fa;
+}
+[data-bs-theme="dark"] .dropdown-item:hover,
+[data-bs-theme="dark"] .dropdown-item:focus {
+    background-color: #495057;
+    color: #fff;
+}
+[data-bs-theme="dark"] .card {
+    background-color: #343a40;
+    border-color: #495057;
+}
+[data-bs-theme="dark"] .table {
+    color: #f8f9fa; /* Make table text light */
+}
+[data-bs-theme="dark"] .table-striped tbody tr:nth-of-type(odd) {
+    background-color: rgba(255, 255, 255, 0.05); /* Lighter stripes on dark background */
+}
+[data-bs-theme="dark"] .list-group-item {
+    background-color: #343a40;
+    border-color: #495057;
+}
+[data-bs-theme="dark"] .alert-success {
+    background-color: #198754; color: #fff; border-color: #198754;
+}
+[data-bs-theme="dark"] .alert-danger {
+    background-color: #dc3545; color: #fff; border-color: #dc3545;
+}
+[data-bs-theme="dark"] .form-control,
+[data-bs-theme="dark"] .form-select {
+    background-color: #495057;
+    color: #fff;
+    border-color: #6c757d;
+}
+[data-bs-theme="dark"] .form-control:focus,
+[data-bs-theme="dark"] .form-select:focus {
+    background-color: #495057;
+    color: #fff;
+    border-color: #86b7fe; /* Bootstrap focus color */
+    box-shadow: 0 0 0 0.25rem rgba(13, 110, 253, 0.25); /* Bootstrap focus shadow */
+}
+[data-bs-theme="dark"] .btn-outline-secondary {
+    color: #adb5bd;
+    border-color: #6c757d;
+}
+[data-bs-theme="dark"] .btn-outline-secondary:hover {
+    color: #fff;
+    background-color: #6c757d;
+}
+[data-bs-theme="dark"] .pagination .page-link {
+    background-color: #495057;
+    border-color: #6c757d;
+    color: #f8f9fa;
+}
+[data-bs-theme="dark"] .pagination .page-item.active .page-link {
+    background-color: #0d6efd;
+    border-color: #0d6efd;
+    color: #fff;
+}
+[data-bs-theme="dark"] .pagination .page-item.disabled .page-link {
+    background-color: #343a40;
+    border-color: #495057;
+    color: #6c757d;
+}
+
+
+/* Responsive adjustments */
+@media (min-width: 768px) { /* md breakpoint */
+    #wrapper {
+        flex-direction: row; /* Sidebar and content side-by-side */
+    }
+    #sidebar-wrapper {
+        margin-left: 0; /* Visible by default on larger screens */
+    }
+    #page-content-wrapper {
+        min-width: 0; /* Allow shrinking */
+        width: auto; /* Allow taking remaining space */
+    }
+    #wrapper.toggled #sidebar-wrapper {
+        margin-left: -250px; /* Hide when toggled on larger screens */
+    }
+}

@@ -1,0 +1,19 @@
+{
+    "name": "gaming-dashboard/gaming-dashboard",
+    "description": "A comprehensive web-based gaming dashboard for managing a Red Dead Redemption 2 server database.",
+    "type": "project",
+    "require": {
+        "php": ">=8.1"
+    },
+    "authors": [
+        {
+            "name": "Your Name",
+            "email": "you@example.com"
+        }
+    ],
+    "autoload": {
+        "psr-4": {
+            "App\\": "app/"
+        }
+    }
+}

@@ -1,0 +1,226 @@
+<?php
+// public/index.php - Main Entry Point / Front Controller
+
+// Start session management
+if (session_status() == PHP_SESSION_NONE) {
+    session_start();
+}
+
+// Basic error reporting (for development)
+// In production, log errors to a file and don't display them to users.
+ini_set('display_errors', 1);
+ini_set('display_startup_errors', 1);
+error_reporting(E_ALL);
+
+// Autoloading for classes (if using Composer, otherwise manual requires)
+// Assuming composer.json is set up with PSR-4 autoloading for App\
+// and vendor/autoload.php would exist after `composer install`.
+// Since we don't have composer install in sandbox, manual requires are safer for now.
+// If you run `composer install` locally, you can switch to:
+// require_once __DIR__ . '/../vendor/autoload.php';
+
+// Manual requires for now
+require_once __DIR__ . '/../app/Config/database.php';
+require_once __DIR__ . '/../app/Services/AuthService.php';
+require_once __DIR__ . '/../app/Controllers/AuthController.php';
+require_once __DIR__ . '/../app/Controllers/UserController.php';
+// Add other controllers as they are created, e.g.:
+// require_once __DIR__ . '/../app/Controllers/DashboardController.php';
+
+// Basic Routing
+$action = $_GET['action'] ?? 'showLogin'; // Default action if none is specified
+
+// Instantiate AuthService here to be available for layout and controllers if needed
+$authService = new AuthService();
+
+// Initialize $pageTitle here, controllers can override it
+$pageTitle = 'Gaming Dashboard';
+$viewFile = null; // The specific view file to be included by main.php
+$viewData = [];   // Data to be extracted for the view
+$content = '';    // Alternative for views that generate full content string
+
+// CSRF token check for POST/modifying requests (a simplified global check)
+// More specific checks should be in controllers for relevant actions.
+if ($_SERVER['REQUEST_METHOD'] === 'POST') {
+    if (!isset($_POST['csrf_token']) || !$authService->verifyCsrfToken($_POST['csrf_token'])) {
+        // Handle CSRF error: log, show error message, redirect
+        $_SESSION['error_message'] = 'CSRF token validation failed. Please try again.';
+        // Redirect to a safe page, perhaps the previous one or home.
+        // For simplicity, redirecting to dashboard or login.
+        if ($authService->isLoggedIn()) {
+            header('Location: index.php?action=dashboard');
+        } else {
+            header('Location: index.php?action=showLogin');
+        }
+        exit;
+    }
+}
+
+
+// Route requests to controllers
+switch ($action) {
+    // Authentication routes
+    case 'showLogin':
+        $controller = new AuthController();
+        $pageTitle = 'Login'; // AuthController's showLoginForm will handle view rendering
+        $controller->showLoginForm(); // This method includes the view directly for now.
+        exit; // Exit because showLoginForm handles the full page render.
+    case 'login':
+        $controller = new AuthController();
+        $controller->login(); // Handles logic and redirects
+        exit;
+    case 'logout':
+        $controller = new AuthController();
+        $controller->logout(); // Handles logic and redirects
+        exit;
+    case 'dashboard':
+        $controller = new AuthController(); // AuthController has a basic dashboard method
+        $pageTitle = 'Dashboard';
+        // The dashboard method in AuthController currently echoes directly.
+        // To use the layout, it should prepare $content or set $viewFile.
+        // For now, we'll call it and then include main.php if it doesn't exit.
+        // A better approach: $content = $controller->dashboard(); require_once '../app/Views/layouts/main.php';
+        // For now, AuthController::dashboard() includes its own simple HTML or exits.
+        // To integrate with main.php properly, AuthController::dashboard should change.
+        // Let's make a simple dashboard view and use $viewFile.
+        if (!$authService->isLoggedIn()) {
+            $_SESSION['login_error'] = 'You must be logged in to view the dashboard.';
+            header('Location: index.php?action=showLogin');
+            exit;
+        }
+        $viewFile = __DIR__ . '/../app/Views/dashboard/index.php'; // Create this file
+        break;
+
+    // User Management routes
+    case 'userList':
+        $controller = new UserController();
+        $pageTitle = 'User Management';
+        // UserController's index method will require the view and pass data.
+        // To use main.php layout, UserController methods should prepare $content or set $viewFile.
+        // For now, let's assume UserController::index() will set $viewFile and $viewData
+        // This is a temporary direct call; ideally, controller sets vars for main.php
+        $controller->index(); // This will include 'app/Views/users/index.php'
+        // To make it work with main.php, users/index.php should capture its output to $content
+        // or UserController methods should be refactored to set $viewFile and $viewData.
+        // Let's assume users/index.php (and other user views) are now designed to be included by main.php
+        // So, the controller actions that show views need to be adapted.
+        // For example, UserController::index() should set $GLOBALS['users'], $GLOBALS['totalPages'] etc.
+        // and then we set $viewFile here. This is getting messy.
+        // A better way: controllers return data, and router includes view within layout.
+
+        // Refactored approach for UserController:
+        // 1. UserController methods prepare data.
+        // 2. Router sets $viewFile and $viewData.
+        // 3. main.php uses $viewFile and $viewData.
+
+        // Let's adjust UserController calls slightly for this example
+        // (Actual UserController methods would need to change to not echo/require directly)
+        // For this example, we'll assume the view files called by controller methods
+        // are now designed to be wrapped by main.php and use its variables.
+        // The UserController itself will handle including the specific view file.
+        // This means main.php would need to be included at the END of those specific view files,
+        // or those view files use ob_start/ob_get_clean.
+        // The current main.php tries to handle $viewFile or $content.
+        // Let's make UserController->index() assign to $GLOBALS for view data for now.
+        $userCtrl = new UserController();
+        $userCtrl->index(); // This method will set $viewFile and $viewData in its scope or use require.
+                            // For main.php to work, it's better if controller returns view path & data.
+                            // For now, assume userList directly outputs or is self-contained with layout.
+                            // The current UserController includes its views directly.
+                            // So we need to exit after calling it if it renders a full page.
+                            // To use the main.php layout correctly, UserController methods should NOT output directly.
+                            // They should prepare data, and this router should then include main.php.
+
+        // Corrected flow:
+        $userCtlr = new UserController();
+        $page = isset($_GET['page']) ? (int)$_GET['page'] : 1;
+        $limit = 10;
+        $offset = ($page - 1) * $limit;
+        $searchTerm = $_GET['search'] ?? '';
+        $viewData['users'] = $userCtlr->userModel->getAllUsers($limit, $offset, $searchTerm); // Accessing model directly from controller for data
+        $viewData['totalUsers'] = $userCtlr->userModel->getTotalUserCount($searchTerm);
+        $viewData['totalPages'] = ceil($viewData['totalUsers'] / $limit);
+        $viewData['page'] = $page;
+        $viewData['searchTerm'] = $searchTerm;
+        $viewData['csrfToken'] = $authService->getCsrfToken(); // Pass CSRF
+        $viewFile = __DIR__ . '/../app/Views/users/index.php';
+        break;
+
+    case 'userCreate':
+        $userCtlr = new UserController(); // Auth check is inside constructor
+        $pageTitle = 'Create User';
+        $viewData['csrfToken'] = $authService->getCsrfToken();
+        $viewData['formData'] = $_SESSION['form_data'] ?? []; // For repopulating form on error
+        unset($_SESSION['form_data']);
+        $viewFile = __DIR__ . '/../app/Views/users/create.php';
+        break;
+    case 'userStore':
+        $controller = new UserController();
+        $controller->store(); // Handles logic and redirects
+        exit;
+    case 'userEdit':
+        $userCtlr = new UserController(); // Auth check is inside constructor
+        $identifier = $_GET['identifier'] ?? null;
+        if (!$identifier) { /* error, redirect */ header('Location: index.php?action=userList'); exit; }
+        $userData = $userCtlr->userModel->findByIdentifier($identifier);
+        if (!$userData) { /* error, redirect */ $_SESSION['error_message'] = 'User not found.'; header('Location: index.php?action=userList'); exit; }
+        $pageTitle = 'Edit User: ' . htmlspecialchars($identifier);
+        $viewData['user'] = $userData;
+        $viewData['csrfToken'] = $authService->getCsrfToken();
+        $viewFile = __DIR__ . '/../app/Views/users/edit.php';
+        break;
+    case 'userUpdate':
+        $controller = new UserController();
+        $identifier = $_GET['identifier'] ?? null; // Assuming identifier is passed for update target
+        if (!$identifier) { /* error */ header('Location: index.php?action=userList'); exit; }
+        $controller->update($identifier); // Handles logic and redirects
+        exit;
+    case 'userDelete':
+        $controller = new UserController();
+        $identifier = $_GET['identifier'] ?? null; // Assuming identifier is passed for delete target
+        if (!$identifier) { /* error */ header('Location: index.php?action=userList'); exit; }
+        $controller->delete($identifier); // Handles logic and redirects
+        exit;
+
+    // AJAX route example for theme toggle (optional)
+    case 'toggleTheme':
+        if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['theme'])) {
+            $theme = $_POST['theme'] === 'dark' ? 'dark' : 'light';
+            $_SESSION['theme'] = $theme;
+            echo json_encode(['success' => true, 'theme' => $theme]);
+        } else {
+            echo json_encode(['success' => false]);
+        }
+        exit; // AJAX response, no HTML layout needed
+
+    default:
+        // Fallback for unknown actions - show dashboard or login
+        if ($authService->isLoggedIn()) {
+            $pageTitle = 'Dashboard';
+            // Create a simple dashboard view if it doesn't exist
+            if (!file_exists(__DIR__ . '/../app/Views/dashboard/index.php')) {
+                file_put_contents(__DIR__ . '/../app/Views/dashboard/index.php', '<h1>Dashboard</h1><p>Welcome, ' . htmlspecialchars($_SESSION['user_id']) . '!</p>');
+            }
+            $viewFile = __DIR__ . '/../app/Views/dashboard/index.php';
+        } else {
+            // If not logged in and action is not 'showLogin' or 'login', redirect to login
+            header('Location: index.php?action=showLogin');
+            exit;
+        }
+        break;
+}
+
+// If $viewFile is set, include the main layout which will then include $viewFile
+if ($viewFile) {
+    // $pageTitle, $viewFile, $viewData, $authService should be available to main.php
+    // $authService is already instantiated.
+    // The main.php will extract $viewData.
+    require_once __DIR__ . '/../app/Views/layouts/main.php';
+} elseif (!empty($content)) {
+    // If a controller generated full $content (less ideal for this structure)
+    // This path is less likely with the current main.php setup.
+    echo $content;
+}
+// If a controller action already handled output and exited (like redirects), this point won't be reached.
+
+?>
