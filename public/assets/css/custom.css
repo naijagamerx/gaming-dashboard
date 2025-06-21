@@ -6,57 +6,86 @@ body {
 
 #wrapper {
     display: flex;
-    min-height: 100vh; /* Ensure footer is at bottom if content is short */
-    flex-direction: column; /* Default for smaller screens */
+    min-height: 100vh;
+    flex-direction: column; /* Mobile first: content below sidebar toggle area */
 }
 
+/* Mobile first: sidebar is an overlay */
 #sidebar-wrapper {
-    min-height: 100vh; /* Full height sidebar */
-    width: 250px; /* Default sidebar width */
-    transition: margin-left 0.25s ease-out;
-    margin-left: -250px; /* Hidden by default on small screens */
+    min-height: 100vh;
+    width: 250px;
+    position: fixed;
+    top: 0;
+    left: 0;
+    bottom: 0;
+    z-index: 1030;
+    transform: translateX(-250px); /* Initially hidden off-screen */
+    transition: transform 0.25s ease-out;
     flex-shrink: 0;
 }
 
 #page-content-wrapper {
-    flex-grow: 1; /* Takes remaining space */
-    width: 100%; /* Full width initially */
-    overflow-y: auto; /* Allow vertical scroll within content area */
+    flex-grow: 1;
+    width: 100%;
+    overflow-y: auto;
     display: flex;
-    flex-direction: column; /* To make footer stick to bottom */
+    flex-direction: column;
+    /* If using a fixed-top navbar, add padding-top here */
+    /* padding-top: 56px; /* Example if navbar is 56px high and fixed */
+    transition: margin-left 0.25s ease-out; /* For desktop docked sidebar */
 }
 
 #wrapper.toggled #sidebar-wrapper {
-    margin-left: 0;
+    transform: translateX(0); /* Slide sidebar in */
 }
 
-.sidebar-heading {
-    padding: 0.875rem 1.25rem;
-    font-size: 1.2rem;
+/* Overlay for when mobile sidebar is open */
+.sidebar-overlay {
+    display: none;
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background-color: rgba(0, 0, 0, 0.5);
+    z-index: 1029;
+}
+#wrapper.toggled .sidebar-overlay { /* Show overlay when sidebar is active on mobile */
+    display: block;
 }
 
-.list-group-item {
-    border: none;
+
+/* Navbar - Assuming it's part of page-content-wrapper or handled by Bootstrap's fixed-top if used */
+/* If #sidebarToggle is inside the main navbar, its position will be relative to the navbar */
+
+
+/* Table responsiveness improvements */
+.table-responsive {
+    /* Bootstrap already provides this. Ensure it's used on all tables in views. */
 }
-.list-group-item.active {
-    background-color: #495057 !important; /* Darker active state for dark sidebar */
-    border-color: #495057 !important;
-    color: #fff !important;
+.table th, .table td {
+    white-space: nowrap; /* Prevent text wrapping that breaks layout badly */
 }
-.list-group-item-dark.list-group-item-action:hover,
-.list-group-item-dark.list-group-item-action:focus {
-    background-color: #3c4146; /* Slightly lighter hover for dark sidebar items */
-    color: #f8f9fa;
+/* On very small screens, allow some wrapping for descriptions or long text fields */
+@media (max-width: 576px) {
+    .table td.description-cell, .table td.json-cell { /* Add these classes to specific <td> */
+        white-space: normal;
+        word-break: break-word;
+    }
+     h1 { font-size: 1.6rem; }
+     h5 { font-size: 1.05rem; }
+    .btn, .form-control, .form-select { font-size: 0.875rem; }
 }
+
 
 /* Ensure page content takes up available space so footer is at bottom */
-#page-content-wrapper .container-fluid {
+#page-content-wrapper .container-fluid { /* This is the main content area */
     flex-grow: 1;
 }
 
 /* Light theme specific */
 [data-bs-theme="light"] #sidebar-wrapper {
-    background-color: #f8f9fa; /* Light background for sidebar */
+    background-color: #f8f9fa;
     border-right: 1px solid #dee2e6;
 }
 [data-bs-theme="light"] .sidebar-heading {
@@ -64,10 +93,10 @@ body {
     color: #212529;
     border-bottom: 1px solid #dee2e6;
 }
-[data-bs-theme="light"] .list-group-item-dark { /* In light theme, make these appropriate for light bg */
+[data-bs-theme="light"] .list-group-item-dark {
     background-color: #f8f9fa;
     color: #212529;
-    border-color: rgba(0,0,0,.125);
+    border-color: rgba(0,0,0,.075); /* Softer border for light theme items */
 }
 [data-bs-theme="light"] .list-group-item-dark.list-group-item-action:hover,
 [data-bs-theme="light"] .list-group-item-dark.list-group-item-action:focus {
@@ -75,7 +104,7 @@ body {
     color: #000;
 }
 [data-bs-theme="light"] .list-group-item.active {
-    background-color: #0d6efd !important; /* Bootstrap primary for active links in light mode */
+    background-color: #0d6efd !important;
     border-color: #0d6efd !important;
     color: #fff !important;
 }
@@ -84,9 +113,9 @@ body {
 /* Dark theme specific (sidebar is already dark by default in the HTML) */
 [data-bs-theme="dark"] body {
     background-color: #212529;
-    color: #f8f9fa;
+    color: #dee2e6; /* Slightly lighter than f8f9fa for better contrast on dark bg */
 }
-[data-bs-theme="dark"] .navbar { /* Example: Making navbar dark in dark theme */
+[data-bs-theme="dark"] .navbar {
     background-color: #343a40 !important;
     border-bottom: 1px solid #495057 !important;
 }
@@ -108,37 +137,47 @@ body {
     color: #fff;
 }
 [data-bs-theme="dark"] .card {
-    background-color: #343a40;
+    background-color: #2b3035; /* Slightly different from body for card distinction */
     border-color: #495057;
+    color: #dee2e6;
+}
+[data-bs-theme="dark"] .card-header {
+    background-color: #343a40;
+    border-bottom: 1px solid #495057;
 }
 [data-bs-theme="dark"] .table {
-    color: #f8f9fa; /* Make table text light */
+    color: #dee2e6;
 }
 [data-bs-theme="dark"] .table-striped tbody tr:nth-of-type(odd) {
-    background-color: rgba(255, 255, 255, 0.05); /* Lighter stripes on dark background */
+    background-color: rgba(255, 255, 255, 0.04);
 }
-[data-bs-theme="dark"] .list-group-item {
-    background-color: #343a40;
+[data-bs-theme="dark"] .list-group-item { /* For sidebar items in dark theme */
+    background-color: #343a40; /* Match sidebar bg or slightly different */
     border-color: #495057;
+    color: #f8f9fa;
+}
+[data-bs-theme="dark"] .list-group-item.active {
+    background-color: #0d6efd !important; /* Keep primary for active, or use a theme-specific active */
+    border-color: #0d6efd !important;
 }
 [data-bs-theme="dark"] .alert-success {
-    background-color: #198754; color: #fff; border-color: #198754;
+    background-color: #146c43; color: #fff; border-color: #146c43;
 }
 [data-bs-theme="dark"] .alert-danger {
-    background-color: #dc3545; color: #fff; border-color: #dc3545;
+    background-color: #b02a37; color: #fff; border-color: #b02a37;
 }
 [data-bs-theme="dark"] .form-control,
 [data-bs-theme="dark"] .form-select {
-    background-color: #495057;
-    color: #fff;
+    background-color: #343a40;
+    color: #dee2e6;
     border-color: #6c757d;
 }
 [data-bs-theme="dark"] .form-control:focus,
 [data-bs-theme="dark"] .form-select:focus {
-    background-color: #495057;
+    background-color: #343a40;
     color: #fff;
-    border-color: #86b7fe; /* Bootstrap focus color */
-    box-shadow: 0 0 0 0.25rem rgba(13, 110, 253, 0.25); /* Bootstrap focus shadow */
+    border-color: #86b7fe;
+    box-shadow: 0 0 0 0.25rem rgba(13, 110, 253, 0.25);
 }
 [data-bs-theme="dark"] .btn-outline-secondary {
     color: #adb5bd;
@@ -149,9 +188,9 @@ body {
     background-color: #6c757d;
 }
 [data-bs-theme="dark"] .pagination .page-link {
-    background-color: #495057;
+    background-color: #343a40;
     border-color: #6c757d;
-    color: #f8f9fa;
+    color: #dee2e6;
 }
 [data-bs-theme="dark"] .pagination .page-item.active .page-link {
     background-color: #0d6efd;
@@ -159,25 +198,80 @@ body {
     color: #fff;
 }
 [data-bs-theme="dark"] .pagination .page-item.disabled .page-link {
-    background-color: #343a40;
+    background-color: #212529;
     border-color: #495057;
     color: #6c757d;
 }
 
 
-/* Responsive adjustments */
-@media (min-width: 768px) { /* md breakpoint */
+/* Adjust page content wrapper when sidebar is docked on larger screens */
+@media (min-width: 992px) { /* lg breakpoint for docked sidebar */
     #wrapper {
-        flex-direction: row; /* Sidebar and content side-by-side */
+        flex-direction: row;
     }
     #sidebar-wrapper {
-        margin-left: 0; /* Visible by default on larger screens */
+        position: relative; /* Docked sidebar */
+        transform: translateX(0);
     }
     #page-content-wrapper {
-        min-width: 0; /* Allow shrinking */
-        width: auto; /* Allow taking remaining space */
+         margin-left: 0; /* Reset margin, width will adjust */
+         /* padding-top: 0; /* Reset padding if navbar is not fixed top in this view */
     }
-    #wrapper.toggled #sidebar-wrapper {
-        margin-left: -250px; /* Hide when toggled on larger screens */
+    /* When sidebar is toggled OFF on large screens */
+     #wrapper.toggled #sidebar-wrapper {
+        transform: translateX(-250px); /* Hide it by sliding out */
     }
+    #wrapper.toggled #page-content-wrapper {
+        margin-left: -250px; /* Expand content to fill space, or adjust as needed */
+    }
+    .sidebar-overlay { /* No overlay needed for docked sidebar */
+        display: none !important;
+    }
+}
+
+
+/* Dark theme table header fix */
+[data-bs-theme="dark"] .table-light { /* This class is used for thead by default */
+    --bs-table-bg: #343a40;
+    --bs-table-border-color: #495057;
+    color: #f8f9fa;
+}
+[data-bs-theme="dark"] .table-hover tbody tr:hover {
+    --bs-table-hover-bg: #40454a;
+    color: #f8f9fa; /* Ensure text remains readable on hover */
+}
+
+/* Ensure textareas for JSON are readable */
+textarea.form-control { /* Apply to all textareas, or add a specific class like .json-textarea */
+    font-family: SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", monospace;
+    font-size: 0.875em;
+}
+[data-bs-theme="dark"] textarea.form-control {
+    background-color: #2b2f33;
+    color: #ced4da;
+}
+
+/* Fix for sticky table header in scrollable table body */
+.table-responsive .table thead.sticky-top {
+    position: sticky;
+    top: 0; /* Adjust if there's a fixed navbar above the table area */
+    z-index: 10;
+}
+/* Match theme table header backgrounds */
+[data-bs-theme="light"] .table-responsive .table thead.sticky-top th {
+    background-color: #f8f9fa;
+}
+[data-bs-theme="dark"] .table-responsive .table thead.sticky-top th {
+     background-color: #343a40;
+}
+
+/* Optional: Classes to hide table columns at different breakpoints */
+@media (max-width: 991.98px) { /* Below lg */
+    .hide-on-md-down { display: none !important; }
+}
+@media (max-width: 767.98px) { /* Below md */
+    .hide-on-sm-down { display: none !important; }
+}
+@media (max-width: 575.98px) { /* Below sm (xs) */
+    .hide-on-xs-down { display: none !important; }
 }

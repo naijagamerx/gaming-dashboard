@@ -10,11 +10,37 @@ document.addEventListener("DOMContentLoaded", function() {
         // }
         sidebarToggle.addEventListener("click", function(event) {
             event.preventDefault();
-            document.getElementById("wrapper").classList.toggle("toggled");
-            // Uncomment Below to persist sidebar toggle state in localStorage
-            // localStorage.setItem("sb|sidebar-toggle", document.body.classList.contains("sb-sidenav-toggled"));
+            const wrapper = document.getElementById("wrapper");
+            wrapper.classList.toggle("toggled");
+
+            // Handle overlay for mobile
+            const overlay = document.querySelector('.sidebar-overlay');
+            if (wrapper.classList.contains("toggled") && window.innerWidth < 992) { // 992px is lg breakpoint
+                if (overlay) overlay.style.display = 'block';
+            } else {
+                if (overlay) overlay.style.display = 'none';
+            }
+            // Store sidebar state if needed
+            // localStorage.setItem("sidebarToggled", wrapper.classList.contains("toggled"));
         });
     }
+
+    // Add overlay element dynamically if it doesn't exist
+    if (!document.querySelector('.sidebar-overlay')) {
+        const overlay = document.createElement('div');
+        overlay.className = 'sidebar-overlay';
+        overlay.addEventListener('click', function() { // Clicking overlay closes sidebar
+            document.getElementById("wrapper").classList.remove("toggled");
+            this.style.display = 'none';
+        });
+        document.getElementById('wrapper').appendChild(overlay);
+    }
+
+    // Check initial sidebar state on load (e.g., from localStorage)
+    // if (localStorage.getItem("sidebarToggled") === "true") {
+    //    document.getElementById("wrapper").classList.add("toggled");
+    // }
+
 
     // Theme toggle functionality
     const themeToggleBtn = document.getElementById('themeToggleBtn');

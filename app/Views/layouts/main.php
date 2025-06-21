@@ -32,6 +32,21 @@ $currentAction = $_GET['action'] ?? 'dashboard'; // Determine current page for a
 
     <!-- CSRF Token for AJAX requests -->
     <meta name="csrf-token" content="<?= htmlspecialchars($csrfToken); ?>">
+
+    <!-- Basic Content Security Policy -->
+    <meta http-equiv="Content-Security-Policy"
+          content="default-src 'self';
+                   script-src 'self' https://cdn.jsdelivr.net https://code.jquery.com 'unsafe-inline';
+                   style-src 'self' https://cdn.jsdelivr.net 'unsafe-inline';
+                   img-src 'self' data: https://*;
+                   font-src 'self' https://cdn.jsdelivr.net;
+                   form-action 'self';
+                   object-src 'none';
+                   base-uri 'self';">
+    /* Note: 'unsafe-inline' is often needed for Bootstrap's JS components and some inline styles/scripts. */
+    /* A stricter CSP would require removing all inline scripts/styles and using nonces or hashes. */
+    /* allow images from any https source for flexibility, can be tightened */
+
 </head>
 <body>
     <div class="d-flex" id="wrapper">

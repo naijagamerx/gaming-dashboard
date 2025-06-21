@@ -27,10 +27,11 @@ require_once __DIR__ . '/../app/Controllers/UserController.php';
 require_once __DIR__ . '/../app/Controllers/CharacterController.php';
 require_once __DIR__ . '/../app/Controllers/EconomyController.php';
 require_once __DIR__ . '/../app/Controllers/ItemController.php';
-require_once __DIR__ . '/../app/Controllers/HousingController.php'; // Added
-require_once __DIR__ . '/../app/Controllers/AnimalController.php'; // Added
-require_once __DIR__ . '/../app/Controllers/CraftingController.php'; // Added
-require_once __DIR__ . '/../app/Controllers/PosseController.php'; // Added
+require_once __DIR__ . '/../app/Controllers/HousingController.php';
+require_once __DIR__ . '/../app/Controllers/AnimalController.php';
+require_once __DIR__ . '/../app/Controllers/CraftingController.php';
+require_once __DIR__ . '/../app/Controllers/PosseController.php';
+require_once __DIR__ . '/../app/Controllers/ApiController.php'; // Added API Controller
 
 
 // Basic Routing
@@ -63,6 +64,15 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         exit;
     }
 }
+
+// Set common security headers
+header('X-Frame-Options: DENY'); // Prevents clickjacking
+header('X-Content-Type-Options: nosniff'); // Prevents MIME type sniffing
+header('Referrer-Policy: strict-origin-when-cross-origin'); // Controls referrer information
+// Note: Strict-Transport-Security (HSTS) should only be set if HTTPS is enforced site-wide
+// header('Strict-Transport-Security: max-age=31536000; includeSubDomains'); // If HTTPS
+// The CSP header is set via meta tag in main.php, but can also be set here.
+// header("Content-Security-Policy: default-src 'self'; script-src 'self' https://cdn.jsdelivr.net; ...");
 
 
 // Route requests to controllers
@@ -335,6 +345,35 @@ switch ($action) {
         $controller = new PosseController();
         $controller->viewPosse($idParam);
         break;
+
+    // API Routes (Example Stubs)
+    // The router needs to parse paths like /api/users or /api/users/some_id
+    // This basic router uses 'action' parameter. For true RESTful, .htaccess and path parsing needed.
+    // For simplicity, we'll use action parameters for now.
+    // e.g., index.php?action=api_listUsers, index.php?action=api_getUser&id=xyz
+
+    case 'api_listUsers':
+        $apiController = new ApiController();
+        $apiController->listUsers();
+        exit; // API controller handles full response
+    case 'api_getUser':
+        $identifier = $_GET['id'] ?? null; // Assuming 'id' is used for user identifier (SteamID)
+        if (!$identifier) { http_response_code(400); echo json_encode(['error' => 'User identifier missing.']); exit;}
+        $apiController = new ApiController();
+        $apiController->getUser($identifier);
+        exit;
+    case 'api_listCharacters':
+        $apiController = new ApiController();
+        $apiController->listCharacters();
+        exit;
+    case 'api_getCharacter':
+        $charIdentifier = $_GET['id'] ?? null; // Assuming 'id' is used for charidentifier
+        if (!$charIdentifier) { http_response_code(400); echo json_encode(['error' => 'Character ID missing.']); exit;}
+        $apiController = new ApiController();
+        $apiController->getCharacter($charIdentifier);
+        exit;
+    // Add more API routes here...
+
 
     // AJAX route example for theme toggle (optional)
     case 'toggleTheme':
